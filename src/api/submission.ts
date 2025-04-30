@@ -1,6 +1,6 @@
-import {http} from "@/utils/http";
+import { http } from "@/utils/http";
 import { codeInfoUrlPrefix } from "./utils";
-import qs from 'qs';
+import qs from "qs";
 
 export interface CodeItem {
   code_id: number;
@@ -25,12 +25,11 @@ export type CodeInfoResult = {
   };
 };
 
-
 export const getCodeInfoList = (data?: object) => {
   return http.request<CodeInfoResult>("get", codeInfoUrlPrefix("/list"), {
     params: data,
-    paramsSerializer: (params) => {
-      return qs.stringify(params, { arrayFormat: 'repeat' });
-    },
+    paramsSerializer: params => {
+      return qs.stringify(params, { arrayFormat: "repeat" });
+    }
   });
 };

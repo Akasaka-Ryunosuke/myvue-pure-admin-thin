@@ -1,14 +1,14 @@
-import { getCodeInfoList } from '@/api/submission';
-import { clone, delay } from "@pureadmin/utils";
-import { ref, onMounted, reactive, watchEffect } from "vue";
-import type { PaginationProps, LoadingConfig, Align } from "@pureadmin/table";
-import { useUserStore } from '@/store/modules/user';
+import { getCodeInfoList } from "@/api/submission";
+import { delay } from "@pureadmin/utils";
+import { onMounted, reactive, ref, watchEffect } from "vue";
+import type { Align, LoadingConfig, PaginationProps } from "@pureadmin/table";
+import { useUserStore } from "@/store/modules/user";
 
 export function useColumns() {
   const userStore = useUserStore();
   const currentUserId = ref(userStore.userid);
   const isAdmin = ref(false);
-  if (userStore.roles=="admin"){
+  if (userStore.roles == "admin") {
     isAdmin.value = true;
   }
 
@@ -18,16 +18,16 @@ export function useColumns() {
   const hideVal = ref("nohide");
   const tableSize = ref("default");
   const paginationAlign = ref("right");
-  const questionIdFilter = ref('');
+  const questionIdFilter = ref("");
   const typeOptions = [
-    { label: 'Accepted', value: 'Accepted' },
-    { label: 'Wrong Answer', value: 'Wrong Answer' },
-    { label: 'Time Limit Exceeded', value: 'Time Limit Exceed' },
-    { label: 'Runtime Error', value: 'Runtime Error (SIGSEGV)' },
-    { label: 'Compile Error', value: 'Compile Error' },
-    { label: 'Other Error', value: 'Other Error' },
-    { label: 'Presentation Error', value: 'Presentation Error' },
-    { label: 'Memory Limit Exceeded', value: 'Memory Limit Exceed' },
+    { label: "Accepted", value: "Accepted" },
+    { label: "Wrong Answer", value: "Wrong Answer" },
+    { label: "Time Limit Exceeded", value: "Time Limit Exceed" },
+    { label: "Runtime Error", value: "Runtime Error (SIGSEGV)" },
+    { label: "Compile Error", value: "Compile Error" },
+    { label: "Other Error", value: "Other Error" },
+    { label: "Presentation Error", value: "Presentation Error" },
+    { label: "Memory Limit Exceeded", value: "Memory Limit Exceed" }
   ];
   const selectedTypes = ref<string[]>([]);
   const columns: TableColumnList = [
@@ -41,7 +41,11 @@ export function useColumns() {
     },
     {
       label: "题目id",
-      prop: "question_id"
+      prop: "question_id",
+      // *** 添加 slot 属性，指定插槽名称 ***
+      slot: "questionIdSlot" // 你可以自定义一个插槽名称
+      // 提示：如果列内容是可点击的，通常会给一个固定的宽度，避免内容换行影响点击区域
+      // width: 120
     },
     {
       label: "源代码",
@@ -109,7 +113,7 @@ export function useColumns() {
       await fetchData(val);
       loading.value = false;
     } catch (error) {
-      console.error('获取数据失败:', error);
+      console.error("获取数据失败:", error);
       loading.value = false;
     }
 
@@ -123,13 +127,16 @@ export function useColumns() {
     await fetchData();
   }
 
-  async function fetchData(val:number=pagination.currentPage) {
+  async function fetchData(val: number = pagination.currentPage) {
     const params = Object.fromEntries(
       Object.entries({
         question_id: questionIdFilter.value || undefined,
         code_type: selectedTypes.value.length ? selectedTypes.value : undefined,
-        user_id: isAdmin.value ? undefined : currentUserId.value,
-      }).filter(([_, value]) => value !== undefined && !(Array.isArray(value) && value.length === 0))
+        user_id: isAdmin.value ? undefined : currentUserId.value
+      }).filter(
+        ([_, value]) =>
+          value !== undefined && !(Array.isArray(value) && value.length === 0)
+      )
     );
 
     const response = await getCodeInfoList({
@@ -154,7 +161,7 @@ export function useColumns() {
       await fetchData();
       loading.value = false;
     } catch (error) {
-      console.error('获取数据失败:', error);
+      console.error("获取数据失败:", error);
       loading.value = false;
     }
   });
