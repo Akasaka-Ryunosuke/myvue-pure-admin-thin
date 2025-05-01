@@ -21,9 +21,30 @@ export type ProblemDetailResult = {
   data: ProblemItem; // 单个题目对象
 };
 
+export type ProblemList = {
+  success: boolean;
+  code: number;
+  message: string;
+  data: {
+    list: ProblemItem[];
+    total: number;
+    page: number;
+    page_size: number;
+  };
+};
+
 // --- API 函数实现 ---
+export const getProblemList = (data?: object) => {
+  return http.request<ProblemList>("get", problemUrlPrefix("/list"), {
+    params: data,
+    paramsSerializer: params => {
+      return qs.stringify(params, { arrayFormat: "repeat" });
+    }
+  });
+};
+
 export const getProblemDetail = (data?: object) => {
-  return http.request<ProblemDetailResult>("get", problemUrlPrefix("/list"), {
+  return http.request<ProblemDetailResult>("get", problemUrlPrefix("/get"), {
     params: data,
     paramsSerializer: params => {
       return qs.stringify(params, { arrayFormat: "repeat" });

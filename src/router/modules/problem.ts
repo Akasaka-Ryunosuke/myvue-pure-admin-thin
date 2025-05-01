@@ -11,7 +11,7 @@ export default {
     {
       path: "/problem/index",
       name: "ProblemList",
-      component: () => import("@/views/problem/index.vue"),
+      component: () => import("@/views/problem/problemList/index.vue"),
       meta: {
         title: "题目列表"
       }
