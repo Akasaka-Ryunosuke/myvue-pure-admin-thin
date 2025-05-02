@@ -60,7 +60,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "@/store/modules/user";
-import { getProblemDetail, updateProblem } from "@/api/problem";
+import { deleteProblem, getProblemDetail, updateProblem } from "@/api/problem";
 import MarkdownIt from "markdown-it";
 import markdownItKatex from "@iktakahiro/markdown-it-katex";
 import "katex/dist/katex.min.css";
@@ -158,13 +158,13 @@ const submitEdit = () => {
 
 // 删除与解决题目
 const handleDeleteProblem = async () => {
-  if (!problem.value?.id) return;
-  if (confirm(`确定删除题目《${problem.value.title}》？`)) {
+  if (!problem.value?.question_id) return;
+  if (confirm(`确定删除题目《${problem.value.question_id}》？`)) {
     loadingDetail.value = true;
     try {
-      // await deleteProblemApi(problem.value.id);
+      await deleteProblem({ question_id: problem.value.question_id });
       alert("删除成功");
-      router.push("/problems");
+      router.push("/problem/index");
     } catch (e: any) {
       alert(`删除失败：${e.message}`);
       loadingDetail.value = false;

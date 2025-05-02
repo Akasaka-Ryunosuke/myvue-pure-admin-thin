@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useColumns } from "./columns";
 import { useRouter } from "vue-router";
+import { addProblem } from "@/api/problem"; // 导入新增接口
 
 const router = useRouter();
 const {
@@ -21,31 +23,69 @@ const {
   handleFilterChange
 } = useColumns();
 
-defineOptions({
-  name: "ProblemList"
+// 控制“新建题目”弹窗的开关
+const createDialogVisible = ref(false);
+
+// 表单模型
+const form = ref({
+  question_id: "",
+  question_raw: ""
 });
+
+// 提交表单并刷新列表
+function submitCreate() {
+  addProblem(form.value)
+    .then(() => {
+      // 新增成功后，刷新当前列表数据
+      handleFilterChange();
+      // 重置表单
+      form.value = { question_id: "", question_raw: "" };
+      // 关闭弹窗
+      createDialogVisible.value = false;
+    })
+    .catch(err => {
+      console.error("创建失败", err);
+      // 这里可以提示用户错误信息
+    });
+}
 </script>
 
 <template>
   <div>
-    <el-input
-      v-model="questionIdFilter"
-      placeholder="按题目 ID 筛选"
-      clearable
-      style="width: 200px; margin-right: 10px"
-      @change="handleFilterChange"
-    />
-    <el-input
-      v-model="questionInfoFilter"
-      placeholder="按题目详情筛选"
-      clearable
-      style="width: 200px; margin-right: 10px"
-      @change="handleFilterChange"
-    />
+    <!-- 顶部操作区域：筛选 + 新建按钮 -->
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      "
+    >
+      <div>
+        <el-input
+          v-model="questionIdFilter"
+          placeholder="按题目 ID 筛选"
+          clearable
+          style="width: 200px; margin-right: 10px"
+          @change="handleFilterChange"
+        />
+        <el-input
+          v-model="questionInfoFilter"
+          placeholder="按题目详情筛选"
+          clearable
+          style="width: 200px; margin-right: 10px"
+          @change="handleFilterChange"
+        />
+      </div>
+      <el-button type="primary" @click="createDialogVisible = true">
+        新建题目
+      </el-button>
+    </div>
 
+    <!-- 题目列表 -->
     <pure-table
       border
-      row-key="code_id"
+      row-key="question_id"
       alignWhole="center"
       showOverflowTooltip
       :size="tableSize as any"
@@ -68,5 +108,26 @@ defineOptions({
         </el-link>
       </template>
     </pure-table>
+
+    <!-- 新建题目对话框 -->
+    <el-dialog
+      title="新建题目"
+      :model-value="createDialogVisible"
+      width="50%"
+      @update:model-value="val => (createDialogVisible = val)"
+    >
+      <el-form :model="form" label-width="100px">
+        <el-form-item label="题目 ID">
+          <el-input v-model="form.question_id" />
+        </el-form-item>
+        <el-form-item label="题目原文">
+          <el-input v-model="form.question_raw" type="textarea" :rows="6" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitCreate">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>

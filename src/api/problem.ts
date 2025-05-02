@@ -55,9 +55,9 @@ export const getProblemDetail = (data?: object) => {
 // 如果需要，你还可以在这里定义添加、编辑、删除题目的 API 函数 (通常使用 POST, PUT, DELETE)
 
 // 添加题目 (POST)
-export const addProblem = (problemData: Omit<ProblemItem, "id">) => {
-  return http.request<any>("post", problemUrlPrefix("/"), {
-    data: problemData // POST 请求通常将数据放在请求体中
+export const addProblem = (data?: object) => {
+  return http.request<any>("post", problemUrlPrefix("/create"), {
+    data: data
   });
 };
 
@@ -69,7 +69,8 @@ export const updateProblem = (data?: object) => {
 };
 
 // 删除题目 (DELETE)
-// export const deleteProblem = (problemId: number | string) => {
-//   return http.request<any>("delete", problemUrlPrefix(`/${problemId}`));
-//   // DELETE 请求通常只需要 ID 在 URL 中
-// };
+export const deleteProblem = (data?: object) => {
+  return http.request<any>("delete", problemUrlPrefix(`/delete`), {
+    data: data
+  });
+};
