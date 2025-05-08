@@ -1,6 +1,6 @@
 export default {
   path: "/problem",
-  redirect: "/problem/index", // 如果你希望 /problem 就是列表页，保留重定向；如果希望 /problem/index 是详情页，则此重定向可能需要调整或移除
+  redirect: "/problem/index",
   meta: {
     icon: "ri/chat-search-line",
     title: "problem",
@@ -11,18 +11,28 @@ export default {
     {
       path: "/problem/index",
       name: "ProblemList",
-      component: () => import("@/views/problem/problemList/index.vue"),
+      component: () => import("@/views/problem/index.vue"),
       meta: {
         title: "题目列表"
       }
     },
     {
-      path: "/problem/:id",
-      name: "ProblemDetail",
-      component: () => import("@/views/problem/index.vue"),
+      path: "/problem/refactor/:id",
+      name: "ProblemRefactor",
+      component: () => import("@/views/problem/problemRefactor/index.vue"),
       meta: {
-        title: "题目详情", // 详情页的标题
-        showLink: false // 详情页通常不显示在左侧菜单中
+        title: "题目修改",
+        showLink: false
+      },
+      props: true
+    },
+    {
+      path: "/problem/detail/:id",
+      name: "ProblemDetail",
+      component: () => import("@/views/problem/problemDetail/index.vue"),
+      meta: {
+        title: "题目详情",
+        showLink: false
       },
       props: true
     }

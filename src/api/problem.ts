@@ -1,5 +1,3 @@
-// src/api/problem.ts
-
 import { http } from "@/utils/http";
 import qs from "qs";
 

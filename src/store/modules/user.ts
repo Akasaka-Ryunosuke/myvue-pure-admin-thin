@@ -21,7 +21,7 @@ export const useUserStore = defineStore("pure-user", {
     // 头像
     avatar: storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "",
     // id
-    userid: storageLocal().getItem<DataInfo<number>>(userKey)?.userid ?? undefined,
+    userid: storageLocal().getItem<DataInfo<number>>(userKey)?.userid ?? "",
     // 用户名
     username: storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "",
     // 昵称
@@ -42,7 +42,7 @@ export const useUserStore = defineStore("pure-user", {
       this.avatar = avatar;
     },
     /** 存储id */
-    SET_USERID(userid: string){
+    SET_USERID(userid: string) {
       this.userid = userid;
     },
     /** 存储用户名 */
@@ -75,11 +75,12 @@ export const useUserStore = defineStore("pure-user", {
         getLogin(input)
           .then(response => {
             if (response?.success) {
-              const userData :DataInfo<Date> = {
-                userid: response.data.user_id,  // 映射字段
+              const userData: DataInfo<Date> = {
+                userid: response.data.user_id, // 映射字段
                 username: response.data.user_name,
                 roles: response.data.user_type,
-                permissions: response.data.user_type=="admin"? ['*:*:*']:[],
+                permissions:
+                  response.data.user_type == "admin" ? ["*:*:*"] : [],
                 accessToken: response.data.access_token,
                 refreshToken: response.data.refresh_token,
                 expires: undefined
@@ -114,7 +115,7 @@ export const useUserStore = defineStore("pure-user", {
                 accessToken: response.data.access_token,
                 refreshToken: response.data.refresh_token,
                 expires: undefined
-              }
+              };
               setToken(tokenData);
               resolve(data);
             }

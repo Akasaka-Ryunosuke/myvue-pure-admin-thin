@@ -70,7 +70,14 @@ export function setToken(data: DataInfo<Date>) {
       : {}
   );
 
-  function setUserKey({ avatar, userid, username, nickname, roles, permissions }) {
+  function setUserKey({
+    avatar,
+    userid,
+    username,
+    nickname,
+    roles,
+    permissions
+  }) {
     useUserStoreHook().SET_AVATAR(avatar);
     useUserStoreHook().SET_USERID(userid);
     useUserStoreHook().SET_USERNAME(username);
@@ -82,17 +89,18 @@ export function setToken(data: DataInfo<Date>) {
       expires,
       avatar,
       username,
+      userid,
       nickname,
       roles,
       permissions
     });
   }
 
-  if (data.username && data.roles) {
-    const { username, roles } = data;
+  if (data.userid && data.username && data.roles) {
+    const { userid, username, roles } = data;
     setUserKey({
       avatar: data?.avatar ?? "",
-      userid: data?.userid ?? "",
+      userid,
       username,
       nickname: data?.nickname ?? "",
       roles,

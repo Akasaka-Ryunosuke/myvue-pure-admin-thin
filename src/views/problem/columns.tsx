@@ -25,14 +25,17 @@ export function useColumns() {
     {
       label: "题目id",
       prop: "question_id",
-      // *** 添加 slot 属性，指定插槽名称 ***
-      slot: "questionIdSlot" // 你可以自定义一个插槽名称
-      // 提示：如果列内容是可点击的，通常会给一个固定的宽度，避免内容换行影响点击区域
-      // width: 120
+      slot: "questionIdSlot"
     },
     {
       label: "题目名称",
       prop: "question_name"
+    },
+    {
+      label: "操作",
+      width: "200",
+      fixed: "right",
+      slot: "operation"
     }
   ];
 

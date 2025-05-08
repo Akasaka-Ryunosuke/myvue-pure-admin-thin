@@ -7,11 +7,7 @@ import { useUserStore } from "@/store/modules/user";
 export function useColumns() {
   const userStore = useUserStore();
   const currentUserId = ref(userStore.userid);
-  const isAdmin = ref(false);
-  if (userStore.roles == "admin") {
-    isAdmin.value = true;
-  }
-
+  const isAdmin = ref(userStore.roles == "admin");
   const dataList = ref([]);
   const loading = ref(true);
   const select = ref("no");
