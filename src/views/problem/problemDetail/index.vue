@@ -9,7 +9,7 @@ import { useDark } from "@pureadmin/utils";
 import Codemirror from "codemirror-editor-vue3";
 import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import type { Editor, EditorConfiguration } from "codemirror";
-import { getProblemDetail } from "@/api/problem";
+import { getProblemDetail, submitProblem } from "@/api/problem";
 import { getCodeInfoList } from "@/api/submission";
 import MarkdownIt from "markdown-it";
 import markdownItKatex from "@iktakahiro/markdown-it-katex";
@@ -151,7 +151,12 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
   try {
     // 这里添加提交代码的 API 调用
-    evaluationResult.value = "评测通过！用时 120ms";
+    // evaluationResult.value = "评测通过！用时 120ms";
+    const submitRes = await submitProblem({
+      question_id: currentQuestionId.value,
+      code: code.value
+    });
+    evaluationResult.value = submitRes.data;
   } finally {
     isSubmitting.value = false;
   }
@@ -206,10 +211,10 @@ onMounted(async () => {
     >
       <el-card
         shadow="never"
-        style=" display: flex;flex: 1; flex-direction: column; overflow: hidden"
+        style="display: flex; flex: 1; flex-direction: column; overflow: hidden"
       >
         <h3
-          style=" flex-shrink: 0;padding: 10px; border-bottom: 1px solid #eee"
+          style="flex-shrink: 0; padding: 10px; border-bottom: 1px solid #eee"
         >
           题目描述
         </h3>
@@ -224,17 +229,17 @@ onMounted(async () => {
     <!-- 代码编辑栏 -->
     <div
       class="section code-section"
-      style=" display: flex;flex: 3; flex-direction: column; height: 85vh"
+      style="display: flex; flex: 3; flex-direction: column; height: 85vh"
     >
       <el-card
         shadow="never"
-        style=" display: flex;flex: 1; flex-direction: column; overflow: hidden"
+        style="display: flex; flex: 1; flex-direction: column; overflow: hidden"
       >
         <div
-          style=" display: flex;flex: 1; flex-direction: column; min-height: 0"
+          style="display: flex; flex: 1; flex-direction: column; min-height: 0"
         >
           <h3
-            style=" flex-shrink: 0;padding: 10px; border-bottom: 1px solid #eee"
+            style="flex-shrink: 0; padding: 10px; border-bottom: 1px solid #eee"
           >
             代码
           </h3>
@@ -289,7 +294,7 @@ onMounted(async () => {
 
           <!-- 提交按钮 -->
           <div
-            style=" flex-shrink: 0;padding: 10px; border-top: 1px solid #eee"
+            style="flex-shrink: 0; padding: 10px; border-top: 1px solid #eee"
           >
             <el-button
               type="primary"
@@ -305,14 +310,14 @@ onMounted(async () => {
     </div>
     <div
       class="section ai-section"
-      style=" display: flex;flex: 4; flex-direction: column; height: 85vh"
+      style="display: flex; flex: 4; flex-direction: column; height: 85vh"
     >
       <el-card
         shadow="never"
-        style=" display: flex;flex: 1; flex-direction: column; overflow: hidden"
+        style="display: flex; flex: 1; flex-direction: column; overflow: hidden"
       >
         <h3
-          style=" flex-shrink: 0;padding: 10px; border-bottom: 1px solid #eee"
+          style="flex-shrink: 0; padding: 10px; border-bottom: 1px solid #eee"
         >
           AI助手
         </h3>
