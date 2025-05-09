@@ -72,3 +72,10 @@ export const deleteProblem = (data?: object) => {
     data: data
   });
 };
+
+// 提交题目 (SUBMIT)
+export const submitProblem = (data?: object) => {
+  return http.request<any>("post", problemUrlPrefix(`/submit`), {
+    data: data
+  });
+};

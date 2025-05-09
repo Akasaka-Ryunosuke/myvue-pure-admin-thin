@@ -9,7 +9,7 @@ import { useDark } from "@pureadmin/utils";
 import Codemirror from "codemirror-editor-vue3";
 import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import type { Editor, EditorConfiguration } from "codemirror";
-import { getProblemDetail } from "@/api/problem";
+import { getProblemDetail, submitProblem } from "@/api/problem";
 import { getCodeInfoList } from "@/api/submission";
 import MarkdownIt from "markdown-it";
 import markdownItKatex from "@iktakahiro/markdown-it-katex";
@@ -147,7 +147,12 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
   try {
     // 这里添加提交代码的 API 调用
-    evaluationResult.value = "评测通过！用时 120ms";
+    // evaluationResult.value = "评测通过！用时 120ms";
+    const submitRes = await submitProblem({
+      question_id: currentQuestionId.value,
+      code: code.value
+    });
+    evaluationResult.value = submitRes.data;
   } finally {
     isSubmitting.value = false;
   }
