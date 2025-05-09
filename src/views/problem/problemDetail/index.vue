@@ -14,14 +14,10 @@ import { getCodeInfoList } from "@/api/submission";
 import MarkdownIt from "markdown-it";
 import markdownItKatex from "@iktakahiro/markdown-it-katex";
 import { useUserStore } from "@/store/modules/user";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 import "deep-chat";
 import { useRoute } from "vue-router";
-import {
-  addSessionDetail,
-  createSession,
-  getSessionDetail,
-  searchSessions
-} from "@/api/llm";
+import { createSession, getSessionDetail, searchSessions } from "@/api/llm";
 
 const { isDark } = useDark();
 const cminstance = ref<Editor | null>(null);
@@ -159,7 +155,12 @@ const handleSubmit = async () => {
 
 // 新增消息发送处理函数
 const chatConnectHandler = async (body: any, signals: any) => {
-  const userMessage = body.messages[0].text; // 获取用户输入的消息
+  const userMessage = body.messages[0].text;
+  const controller = new AbortController();
+
+  signals.stopClicked.listener = () => {
+    controller.abort();
+  };
 
   // 首次发送时创建会话（如果没有会话ID）
   if (!currentLlmRecordId.value) {
@@ -170,14 +171,56 @@ const chatConnectHandler = async (body: any, signals: any) => {
     });
     currentLlmRecordId.value = createRes.data.llm_record_id;
   }
+  try {
+    await fetchEventSource(`/api/llm/add_session_detail`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        llm_record_id: currentLlmRecordId.value,
+        raw: userMessage
+      }),
+      signal: controller.signal,
 
-  // 调用 addSessionDetail 发送消息并获取AI回复
-  const detailRes = await addSessionDetail({
-    llm_record_id: currentLlmRecordId.value!,
-    raw: userMessage as string
-  });
-  // 通过 signals 返回AI回复，Deep Chat会自动显示
-  await signals.onResponse({ text: detailRes.data.llm_response });
+      // 连接成功回调
+      async onopen(response) {
+        if (response.status === 200) {
+          signals.onOpen(); // 停止加载动画
+        } else {
+          await signals.onResponse({ error: `HTTP错误: ${response.status}` });
+          controller.abort(); // 关闭连接
+        }
+      },
+
+      // 接收到消息片段时
+      async onmessage(msg) {
+        if (msg.data) {
+          try {
+            const data = JSON.parse(msg.data);
+            await signals.onResponse({ text: data.llm_response }); // 更新消息内容
+          } catch (e) {
+            await signals.onResponse({ text: msg.data }); // 直接显示原始数据
+          }
+        }
+      },
+
+      // 错误处理
+      onerror(error) {
+        signals.onResponse({ error: `流式响应错误: ${error.message}` });
+        throw error; // 触发 onclose
+      },
+
+      // 连接关闭
+      onclose() {
+        signals.onClose(); // 恢复发送按钮
+      }
+    });
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      await signals.onResponse({ error: "连接失败，请重试" });
+    }
+  }
 };
 
 watch(currentMode, async newMode => {
@@ -206,10 +249,10 @@ onMounted(async () => {
     >
       <el-card
         shadow="never"
-        style=" display: flex;flex: 1; flex-direction: column; overflow: hidden"
+        style="display: flex; flex: 1; flex-direction: column; overflow: hidden"
       >
         <h3
-          style=" flex-shrink: 0;padding: 10px; border-bottom: 1px solid #eee"
+          style="flex-shrink: 0; padding: 10px; border-bottom: 1px solid #eee"
         >
           题目描述
         </h3>
@@ -224,17 +267,17 @@ onMounted(async () => {
     <!-- 代码编辑栏 -->
     <div
       class="section code-section"
-      style=" display: flex;flex: 3; flex-direction: column; height: 85vh"
+      style="display: flex; flex: 3; flex-direction: column; height: 85vh"
     >
       <el-card
         shadow="never"
-        style=" display: flex;flex: 1; flex-direction: column; overflow: hidden"
+        style="display: flex; flex: 1; flex-direction: column; overflow: hidden"
       >
         <div
-          style=" display: flex;flex: 1; flex-direction: column; min-height: 0"
+          style="display: flex; flex: 1; flex-direction: column; min-height: 0"
         >
           <h3
-            style=" flex-shrink: 0;padding: 10px; border-bottom: 1px solid #eee"
+            style="flex-shrink: 0; padding: 10px; border-bottom: 1px solid #eee"
           >
             代码
           </h3>
@@ -289,7 +332,7 @@ onMounted(async () => {
 
           <!-- 提交按钮 -->
           <div
-            style=" flex-shrink: 0;padding: 10px; border-top: 1px solid #eee"
+            style="flex-shrink: 0; padding: 10px; border-top: 1px solid #eee"
           >
             <el-button
               type="primary"
@@ -305,14 +348,14 @@ onMounted(async () => {
     </div>
     <div
       class="section ai-section"
-      style=" display: flex;flex: 4; flex-direction: column; height: 85vh"
+      style="display: flex; flex: 4; flex-direction: column; height: 85vh"
     >
       <el-card
         shadow="never"
-        style=" display: flex;flex: 1; flex-direction: column; overflow: hidden"
+        style="display: flex; flex: 1; flex-direction: column; overflow: hidden"
       >
         <h3
-          style=" flex-shrink: 0;padding: 10px; border-bottom: 1px solid #eee"
+          style="flex-shrink: 0; padding: 10px; border-bottom: 1px solid #eee"
         >
           AI助手
         </h3>
@@ -384,7 +427,7 @@ onMounted(async () => {
             }"
             :history="historyMessages"
             :demo="false"
-            :connect="{ handler: chatConnectHandler }"
+            :connect="{ stream: true, handler: chatConnectHandler }"
           />
         </div>
       </el-card>
